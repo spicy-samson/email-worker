@@ -49,4 +49,13 @@ export default {
 			{ status: 202, headers: { "Content-Type": "application/json" } }
 		);
 	},
+
+	async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+		const instance = await env.MY_WORKFLOW.create({
+			params: {
+				to: env.RECIPIENT_EMAIL, // Ensure you have this in .dev.vars or secrets
+			},
+		});
+		console.log(`Cron workflow triggered: ${instance.id}`);
+	},
 };
