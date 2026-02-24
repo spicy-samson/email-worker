@@ -4,5 +4,6 @@ declare namespace Cloudflare {
 		RESEND_FROM?: string;
 		/** Optional; BCC this address on every send (e.g. your email to see the template) */
 		RESEND_BCC?: string;
+		RECIPIENT_EMAIL: string;
 	}
 }
