@@ -14,7 +14,7 @@
 		{
 			"name": "workflow-my-workflow",
 			"binding": "MY_WORKFLOW",
-			"class_name": "MyWorkflow"
+			"class_name": "EmailWorkflow"
 		}
 	],
 	"compatibility_flags": [
