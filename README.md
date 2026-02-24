@@ -36,7 +36,7 @@ Start an email workflow:
 ```bash
 curl -X POST http://localhost:8787/ \
   -H "Content-Type: application/json" \
-  -d '{"to":"paulinoedselgrageda.samson@bicol-u.edu.ph","subject":"Hi, i love you!","html":"<p>Hello</p>"}'
+  -d '{"to":"<>@email.com","subject":"Hi, Lorem Ipsum!","html":"<p>Hello</p>"}'
 ```
 
 Optional: pass `"from"` in the JSON to override `RESEND_FROM`. Pass `"bcc": "you@example.com"` (or an array) to BCC on that send. **Note:** Resend only supports BCC when using a verified domain (not `onboarding@resend.dev`).
