@@ -5,7 +5,7 @@ import {
 } from "cloudflare:workers";
 import { GOOD_MORNING_HTML } from "./templates/good-morning";
 
-const DEFAULT_SUBJECT = "Good Morning";
+const DEFAULT_SUBJECT = "Daily Bible Verse";
 
 export type EmailParams = {
 	to: string;
@@ -32,15 +32,31 @@ export class EmailWorkflow extends WorkflowEntrypoint<Env, EmailParams> {
 	async run(event: WorkflowEvent<EmailParams>, step: WorkflowStep) {
 		const { to, subject, html, from, bcc } = event.payload;
 
-		// Step 1: Validate and persist input (replay-safe)
+		// Step 1: Fetch Daily Bible Verse (if no html provided)
+		const verseHtml = await step.do("fetch-verse", async () => {
+			if (html?.trim()) return html.trim();
+
+			const res = await fetch("https://beta.ourmanna.com/api/v1/get?format=json");
+			if (!res.ok) {
+				console.error(`Failed to fetch verse: ${res.status}`);
+				return GOOD_MORNING_HTML; // Fallback
+			}
+			const data = (await res.json()) as any;
+			const verse = data?.verse?.details?.text;
+			const ref = data?.verse?.details?.reference;
+
+			if (!verse || !ref) return GOOD_MORNING_HTML;
+			return `<h1>Daily Bible Verse</h1><p><em>"${verse}"</em></p><p>- <strong>${ref}</strong></p>`;
+		});
+
+		// Step 2: Validate and persist input (replay-safe)
 		const validated = await step.do("validate-email", async () => {
 			if (!to?.trim()) throw new Error("Missing 'to' email");
 			if (!isValidEmail(to)) throw new Error(`Invalid email: ${to}`);
 			const subj = (subject?.trim() || DEFAULT_SUBJECT).trim();
-			const body = html?.trim() || GOOD_MORNING_HTML;
 			const bccList = toBccList(bcc);
 			for (const e of bccList) if (!isValidEmail(e)) throw new Error(`Invalid bcc email: ${e}`);
-			return { to: to.trim(), subject: subj, html: body, bcc: bccList };
+			return { to: to.trim(), subject: subj, html: verseHtml, bcc: bccList };
 		});
 
 		// Step 2: Send via Resend (retryable step)
